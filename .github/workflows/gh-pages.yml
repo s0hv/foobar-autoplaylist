@@ -47,3 +47,4 @@ jobs:
 
     env:
       NODE_ENV: production
+      PUBLIC_PATH: ${{ github.event.repository.name }}
