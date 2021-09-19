@@ -1,3 +1,7 @@
 module.exports = {
-  preset: '@vue/cli-plugin-unit-jest/presets/typescript-and-babel'
-}
+  preset: 'ts-jest',
+  testMatch: ['<rootDir>/tests/**/*.(test).[jt]s?(x)'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1'
+  }
+};
