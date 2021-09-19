@@ -26,10 +26,11 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Build app
-        run: |
-          npm ci
-          npm run build
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        run: npm run build
 
       - name: GitHub Pages action
         uses: peaceiris/actions-gh-pages@v3.7.3
