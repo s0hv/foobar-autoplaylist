@@ -16,14 +16,14 @@ describe('Test TextComparison', () => {
       false
     );
 
-    expect(tc.rawQuery()).toStrictEqual(`"${field}" HAS "custom string"`);
+    expect(tc.rawQuery()).toStrictEqual(`%artist% HAS "custom string"`);
   });
 
   it('Should work with special characters', () => {
     const tc = new TextComparison(field, TextOperator.Is, "$()[]{}'", false);
 
     expect(tc.rawQuery()).toStrictEqual(
-      `"%artist%" IS "$()[]{}'"`
+      `%artist% IS "$()[]{}'"`
     );
   });
 
@@ -39,7 +39,7 @@ describe('Test TextComparison', () => {
     const tc = new TextComparison(field, OneSideOperator.Present, undefined, false);
 
     expect(tc.rawQuery()).toStrictEqual(
-      `"${field}" PRESENT`
+      `%artist% PRESENT`
     );
   });
 
@@ -47,7 +47,15 @@ describe('Test TextComparison', () => {
     const tc = new TextComparison(field, NumberOperator.Greater, '5', true);
 
     expect(tc.rawQuery()).toStrictEqual(
-      `NOT "${field}" GREATER "5"`
+      `NOT %artist% GREATER 5`
+    );
+  });
+
+  it('Should quote field with spaces', () => {
+    const tc = new TextComparison('%album artist%', TextOperator.Has, 'a', false);
+
+    expect(tc.rawQuery()).toStrictEqual(
+      `"%album artist%" HAS "a"`
     );
   });
 });
