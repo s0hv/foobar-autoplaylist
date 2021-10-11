@@ -19,6 +19,7 @@
         <v-row justify="center" v-if="query">
           <QueryHighlighted
             :code="query"
+            class="ma-5"
           />
         </v-row>
       </v-container>

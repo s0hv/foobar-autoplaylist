@@ -28,41 +28,16 @@
 
       </draggable>
     </v-container>
-    <v-dialog
-      v-model="showDialog"
-      max-width="400"
-    >
-      <template v-slot:activator="{ on, attrs }">
-        <v-btn
-          class="add-button"
-          v-on="on"
-          v-bind="attrs"
-          icon
-        >
-          <v-icon>
-            add
-          </v-icon>
-        </v-btn>
-      </template>
-      <v-card>
-        <v-card-title class="text-h5">
-          Add query
-        </v-card-title>
-        <v-card-text>
-          <v-select
-            label="Query type"
-            v-model="selectedQueryType"
-            :items="queryInputs"
-          >
-          </v-select>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="primary" @click="showDialog = false">Cancel</v-btn>
-          <v-btn color="primary" @click="addQuery">Add</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <div class="display-flex flex-row align-center">
+      <v-select
+        label="Query type"
+        v-model="selectedQueryType"
+        :items="queryInputs"
+        class="ma-5"
+      >
+      </v-select>
+      <v-btn color="primary" @click="addQuery">Add new query</v-btn>
+    </div>
   </div>
 </template>
 
@@ -121,7 +96,6 @@ const queryInputs: SelectOption[] = [
 })
 export default class QueryInputSelector extends Vue implements IQueryInput {
   query: IAutoplaylistQuery | null = null;
-  showDialog = false;
   selectedQueryType = QueryType.TextQuery;
   firstQuery: IAutoplaylistQuery | null = null;
   lastQuery: IAutoplaylistQuery | null = null;
@@ -145,7 +119,6 @@ export default class QueryInputSelector extends Vue implements IQueryInput {
   }
 
   addQuery(): void {
-    this.showDialog = false;
     let query: IAutoplaylistQuery;
 
     switch (this.selectedQueryType) {
@@ -192,10 +165,6 @@ export default class QueryInputSelector extends Vue implements IQueryInput {
     this.updateFirstAndLastQuery();
   }
 
-  addClicked(): void {
-    this.showDialog = true;
-  }
-
   sortQueries(): void {
     let prevQuery: IAutoplaylistQuery | null = null;
 
@@ -232,10 +201,6 @@ export default class QueryInputSelector extends Vue implements IQueryInput {
     justify-content: center;
     flex-flow: column;
     width: 100%;
-  }
-
-  .add-button {
-    color: #4caf50;
   }
 
   .handle {

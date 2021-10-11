@@ -35,6 +35,10 @@
     border-radius: 5px;
 }
 
+.display-flex {
+    display: flex;
+}
+
 @media (max-width: 960px) {
     .container {
         width: 90vw;
