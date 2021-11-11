@@ -1,6 +1,7 @@
 import { BaseAutoplaylistQuery } from '@/autoplaylist/default/BaseQuery';
 import {
-  ITextComparison,
+  ICombinedQuery,
+  ITextComparison, LogicalOperator,
   OneSideOperator, QueryType,
   TextOperator
 } from '@/types/autoplaylist';
@@ -11,16 +12,18 @@ export const oneSideOperatorValues: string[] = Object.values(OneSideOperator);
 export class TextComparison extends BaseAutoplaylistQuery implements ITextComparison {
   field: string;
   comparator: TextOperator | OneSideOperator | string;
-  comparedAgainst?: string | null;
+  comparedAgainst: string | null;
   readonly type = QueryType.TextQuery;
 
   constructor(
     field: string,
     comparator: TextOperator | OneSideOperator | string,
-    comparedAgainst: string | undefined | null,
-    negated = false
+    comparedAgainst: string | null,
+    negated = false,
+    parent?: ICombinedQuery,
+    combinedWith?: LogicalOperator | string | null
   ) {
-    super(negated);
+    super(negated, parent, combinedWith);
 
     this.field = field;
     this.comparator = comparator;

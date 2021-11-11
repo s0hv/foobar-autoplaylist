@@ -28,7 +28,7 @@ describe('Test TextComparison', () => {
   });
 
   it('Should work with custom values', () => {
-    const tc = new TextComparison('test value', 'test operator', undefined, false);
+    const tc = new TextComparison('test value', 'test operator', null, false);
 
     expect(tc.rawQuery()).toStrictEqual(
       `"test value" test operator`
@@ -36,7 +36,7 @@ describe('Test TextComparison', () => {
   });
 
   it('Should work with one side operator', () => {
-    const tc = new TextComparison(field, OneSideOperator.Present, undefined, false);
+    const tc = new TextComparison(field, OneSideOperator.Present, null, false);
 
     expect(tc.rawQuery()).toStrictEqual(
       `%artist% PRESENT`

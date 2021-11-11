@@ -1,4 +1,10 @@
 // A fine piece of regex
+import {
+  NumberOperator,
+  OneSideOperator,
+  TextOperator, TimeOperator
+} from '@/types/autoplaylist';
+
 export const dateRegexFull = '\\d{4}(-\\d{2}(-\\d{2}( \\d{2}(:\\d{2}(:\\d{2})?)?)?)?)?';
 export const dateRegex = new RegExp(`^${dateRegexFull}$`);
 
@@ -67,7 +73,17 @@ export const fields = [
   '%played_per_day%',
   '%rating%',
   '%rating_stars%',
-  'rating_stars_fixed',
+  '%rating_stars_fixed%',
 
   ...timeFields
 ];
+
+export const oneSideOperators: Set<string> = new Set(Object.values(OneSideOperator));
+export const timeOperators: Set<string> = new Set(Object.values(TimeOperator));
+
+export const valueOperators: Set<string> = new Set([
+  ...Object.values(TextOperator),
+  ...Object.values(OneSideOperator),
+  ...Object.values(NumberOperator),
+  ...Object.values(TimeOperator)
+]);

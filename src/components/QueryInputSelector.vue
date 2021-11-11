@@ -1,9 +1,9 @@
 <template>
   <div class="input-group">
-    <v-container v-if="firstQuery !== null" class="root-container">
-      <draggable v-model="allQueries" handle=".handle" @end="sortQueries">
-        <v-row v-for="query in allQueries" v-bind:key="query.id" class="flex-nowrap">
-          <component v-bind:is="getQueryComponent(query)" :query="query"></component>
+    <v-container v-if="query.queries.length !== 0" class="root-container">
+      <draggable v-model="query.queries" handle=".handle" @end="sortQueries">
+        <v-row v-for="q in query.queries" v-bind:key="q.id" class="flex-nowrap">
+          <component v-bind:is="getQueryComponent(q)" :query="q"></component>
           <v-icon class="handle">
             drag_handle
           </v-icon>
@@ -15,7 +15,7 @@
                 aria-label="remove query"
                 v-bind="attrs"
                 v-on="on"
-                @click="() => removeQuery(query)"
+                @click="() => removeQuery(q)"
               >
                 <v-icon>
                   delete_forever
@@ -43,10 +43,10 @@
 
 <script lang="ts">
 import {
-  IAutoplaylistQuery,
+  IAutoplaylistQuery, ICombinedQuery,
   IQueryInput, QueryType
 } from '@/types/autoplaylist';
-import { TextComparison } from '@/autoplaylist/default';
+import { CombinedQuery, TextComparison } from '@/autoplaylist/default';
 import Vue from 'vue';
 import Component from 'vue-class-component';
 import { TimeComparison } from '@/autoplaylist/default/TimeComparison';
@@ -95,11 +95,8 @@ const queryInputs: SelectOption[] = [
   }
 })
 export default class QueryInputSelector extends Vue implements IQueryInput {
-  query: IAutoplaylistQuery | null = null;
+  query: ICombinedQuery = new CombinedQuery([], true, false);
   selectedQueryType = QueryType.TextQuery;
-  firstQuery: IAutoplaylistQuery | null = null;
-  lastQuery: IAutoplaylistQuery | null = null;
-  allQueries: IAutoplaylistQuery[] = [];
 
   get queryInputs(): SelectOption[] {
     return queryInputs;
@@ -109,13 +106,13 @@ export default class QueryInputSelector extends Vue implements IQueryInput {
     return queryToInput[query.type];
   }
 
-  getQuery(): IAutoplaylistQuery | null {
-    console.log(this.firstQuery);
-    return this.firstQuery;
+  getQuery(): ICombinedQuery | null {
+    console.log(this.query);
+    return this.query;
   }
 
   get queriesInOrder(): IAutoplaylistQuery[] {
-    return this.allQueries;
+    return this.query.queries;
   }
 
   addQuery(): void {
@@ -138,57 +135,28 @@ export default class QueryInputSelector extends Vue implements IQueryInput {
         throw Error('Unsupported query type');
     }
 
-    query.prevQuery = this.lastQuery;
+    query.parent = this.query;
 
-    if (this.firstQuery === null) {
-      this.firstQuery = query;
-    } else if (this.lastQuery !== null) {
-      this.lastQuery.nextQuery = query;
-    }
-
-    this.lastQuery = query;
-    this.allQueries.push(query);
+    this.query.queries.push(query);
+    this.updateFirstAndLastQuery(query.parent);
   }
 
   removeQuery(query: IAutoplaylistQuery): void {
-    const idx = this.allQueries.indexOf(query);
-    this.allQueries.splice(idx, 1);
-    console.log(query, query.prevQuery, query.nextQuery);
-    if (query.prevQuery) {
-      query.prevQuery.nextQuery = query.nextQuery;
-    }
-
-    if (query.nextQuery) {
-      query.nextQuery.prevQuery = query.prevQuery;
-    }
-
-    this.updateFirstAndLastQuery();
+    const idx = this.query.queries.indexOf(query);
+    this.query.queries.splice(idx, 1);
+    this.updateFirstAndLastQuery(query.parent || this.query);
   }
 
   sortQueries(): void {
-    let prevQuery: IAutoplaylistQuery | null = null;
-
-    this.allQueries.forEach(q => {
-      if (prevQuery !== null) {
-        prevQuery.nextQuery = q;
-      }
-
-      q.prevQuery = prevQuery;
-      prevQuery = q;
-    });
-
-    this.updateFirstAndLastQuery();
+    this.updateFirstAndLastQuery(this.query);
   }
 
-  updateFirstAndLastQuery(): void {
-    if (this.allQueries.length === 0) {
-      this.lastQuery = null;
-      this.firstQuery = null;
-      return;
-    }
+  updateFirstAndLastQuery(query: ICombinedQuery): void {
+    const length = query.queries.length;
+    if (length === 0) return;
 
-    this.firstQuery = this.allQueries[0];
-    this.lastQuery = this.allQueries[this.allQueries.length - 1];
+    query.queries.forEach(q => (q.isLast = false));
+    query.queries[length - 1].isLast = true;
   }
 }
 </script>

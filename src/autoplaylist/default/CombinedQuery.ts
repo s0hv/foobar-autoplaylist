@@ -1,32 +1,48 @@
 import {
   IAutoplaylistQuery,
   ICombinedQuery,
-  LogicalOperator, QueryType
+  QueryType
 } from '@/types/autoplaylist';
 import { BaseAutoplaylistQuery } from '@/autoplaylist/default/BaseQuery';
 
 export class CombinedQuery extends BaseAutoplaylistQuery implements ICombinedQuery {
-  logicalOperator: LogicalOperator | string;
-  query1: IAutoplaylistQuery;
-  query2: IAutoplaylistQuery;
+  queries: IAutoplaylistQuery[];
+  /** Determines if this is the root query */
+  isRoot: boolean;
   readonly type = QueryType.CombinedQuery;
 
   constructor(
-    query1: IAutoplaylistQuery,
-    logicalOperator: LogicalOperator | string,
-    query2: IAutoplaylistQuery,
-    negated: boolean
+    queries: IAutoplaylistQuery[],
+    root: boolean,
+    negated: boolean,
+    parent?: ICombinedQuery
   ) {
-    super(negated);
+    super(negated, parent);
 
-    this.query1 = query1;
-    this.logicalOperator = logicalOperator;
-    this.query2 = query2;
+    this.isRoot = root;
+    this.queries = queries;
   }
 
   rawQuery(): string {
-    return this.negateQuery(
-      `(${this.query1.rawQuery()} ${this.logicalOperator} ${this.query2.rawQuery()})`
-    );
+    let queriesJoined = '';
+    const length = this.queries.length;
+
+    for (let idx = 0; idx < length; idx++) {
+      const q = this.queries[idx];
+      if (idx === length - 1) {
+        queriesJoined += q.rawQuery();
+      } else {
+        queriesJoined += `${q.rawQuery()}\n${q.combinedWith}\n`;
+      }
+    }
+
+    let s: string;
+    if (this.isRoot) {
+      s = queriesJoined;
+    } else {
+      s = `(${queriesJoined})`;
+    }
+
+    return this.negateQuery(s);
   }
 }

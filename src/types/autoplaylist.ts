@@ -34,32 +34,40 @@ export enum QueryType {
   FreeSpace
 }
 
+// Forward declaration
+// eslint-disable-next-line import/export,@typescript-eslint/no-empty-interface
+export declare interface ICombinedQuery {}
+
 // The queries can basically be represented as a linked list of queries
 // where the order of the list denotes the order of execution
 export interface IAutoplaylistQuery{
   negated: boolean
-  prevQuery: IAutoplaylistQuery | null
-  nextQuery: IAutoplaylistQuery | null
   /** The operator used to combine this to the next query */
-  combinedWith?: LogicalOperator | string
+  combinedWith: LogicalOperator | string | null
   type: QueryType
+
+  /** Determines if this is the last query in the chain */
+  isLast: boolean
+
+  parent?: ICombinedQuery
 
   // Only used for vue key property. Can be ignored if not using vue
   id: number
 
-  toArray(): IAutoplaylistQuery[]
   rawQuery(): string
-  fullQuery(): string
 }
 
 export interface IQueryInput {
   getQuery(): IAutoplaylistQuery | null;
 }
 
+// Forward declared
+// eslint-disable-next-line import/export
 export interface ICombinedQuery extends IAutoplaylistQuery {
-  query1: IAutoplaylistQuery
-  logicalOperator: LogicalOperator | string
-  query2: IAutoplaylistQuery
+  queries: IAutoplaylistQuery[]
+
+  /** Determines if this is the root query */
+  isRoot: boolean
 }
 
 export interface IFreeSpace extends IAutoplaylistQuery {
@@ -69,7 +77,7 @@ export interface IFreeSpace extends IAutoplaylistQuery {
 export interface ITextComparison extends IAutoplaylistQuery {
   field: string
   comparator: TextOperator | OneSideOperator | string
-  comparedAgainst?: string | null
+  comparedAgainst: string | null
 }
 
 export interface ITimeQuery extends IAutoplaylistQuery {
@@ -77,3 +85,26 @@ export interface ITimeQuery extends IAutoplaylistQuery {
   operator: TimeOperator | string
   time2: Date
 }
+
+// Parser related
+interface StatementAndNode {
+  combinedWith: string | null
+  negated: boolean
+}
+
+export interface Statement extends StatementAndNode {
+  query: string[]
+  original: string
+}
+
+export interface TreeNode extends StatementAndNode{
+  queries: Array<Statement|TreeNode>
+  children: TreeNode[]
+  prevNode?: TreeNode
+}
+
+export interface IParser {
+  parse(): TreeNode
+}
+
+export type map2queryFn = (query: TreeNode, root?: boolean, parent?: ICombinedQuery) => ICombinedQuery;

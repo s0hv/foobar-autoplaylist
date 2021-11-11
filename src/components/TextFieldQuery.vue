@@ -57,7 +57,6 @@ import Comparator from '@/components/Comparator.vue';
 export default class TextFieldQuery extends Vue {
   fields = fields;
   operators = [...Object.values(TextOperator), ...oneSideOperatorValues, ...Object.values(NumberOperator)];
-  logicalOperators = Object.values(LogicalOperator);
 
   $props!: {
     query: ITextComparison

@@ -48,7 +48,7 @@ export default class App extends Vue {
   };
 
   onClick(): void {
-    this.query = this.$refs.text.getQuery()?.fullQuery() || '';
+    this.query = this.$refs.text.getQuery()?.rawQuery() || '';
   }
 }
 </script>

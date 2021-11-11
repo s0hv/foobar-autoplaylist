@@ -1,5 +1,6 @@
 import {
   IAutoplaylistQuery,
+  ICombinedQuery,
   LogicalOperator,
   QueryType
 } from '@/types/autoplaylist';
@@ -8,17 +9,21 @@ let id = 0;
 
 export abstract class BaseAutoplaylistQuery implements IAutoplaylistQuery {
   negated: boolean;
-  combinedWith?: LogicalOperator | string;
-  nextQuery: IAutoplaylistQuery | null;
-  prevQuery: IAutoplaylistQuery | null;
+  combinedWith: LogicalOperator | string | null;
+  isLast = false;
+  parent?: ICombinedQuery;
   id: number;
   abstract readonly type: QueryType;
 
-  protected constructor(negated: boolean) {
+  protected constructor(
+    negated: boolean,
+    parent?: ICombinedQuery,
+    combinedWith: LogicalOperator | string | null = LogicalOperator.And
+  ) {
     this.negated = negated;
-    this.combinedWith = LogicalOperator.And;
-    this.nextQuery = null;
-    this.prevQuery = null;
+    this.combinedWith = combinedWith;
+    this.parent = parent;
+
     this.id = id++;
   }
 
@@ -27,30 +32,4 @@ export abstract class BaseAutoplaylistQuery implements IAutoplaylistQuery {
   }
 
   abstract rawQuery(): string;
-
-  fullQuery(): string {
-    const queries = this.toArray();
-    let query: string | undefined = queries[0].rawQuery();
-    let combine = this.combinedWith;
-
-    for (const q of queries.slice(1)) {
-      query = `${query}\n${combine}\n${q.rawQuery()}`;
-      combine = q.combinedWith;
-    }
-
-    return query;
-  }
-
-  toArray(): IAutoplaylistQuery[] {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    let currentQuery: IAutoplaylistQuery | null = this;
-    const arr = [];
-
-    while (currentQuery != null) {
-      arr.push(currentQuery);
-      currentQuery = currentQuery.nextQuery;
-    }
-
-    return arr;
-  }
 }

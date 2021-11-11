@@ -1,6 +1,7 @@
 import { BaseAutoplaylistQuery } from '@/autoplaylist/default/BaseQuery';
 import {
-  ITextComparison,
+  ICombinedQuery,
+  ITextComparison, LogicalOperator,
   QueryType,
   TimeOperator
 } from '@/types/autoplaylist';
@@ -16,9 +17,11 @@ export class TimeComparison extends BaseAutoplaylistQuery implements ITextCompar
     field: string,
     comparator: TimeOperator | string,
     comparedAgainst: string,
-    negated = false
+    negated = false,
+    parent?: ICombinedQuery,
+    combinedWith?: LogicalOperator | string | null
   ) {
-    super(negated);
+    super(negated, parent, combinedWith);
 
     this.field = field;
     this.comparator = comparator;

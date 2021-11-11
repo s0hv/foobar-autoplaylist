@@ -1,5 +1,5 @@
 <template>
-  <v-row v-show="query.nextQuery !== null" class="justify-center pa-top-16">
+  <v-row v-show="!query.isLast" class="justify-center pa-top-16">
     <v-select
       class="width-100"
       label="Comparator"
