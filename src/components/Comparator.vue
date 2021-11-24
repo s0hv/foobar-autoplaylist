@@ -25,7 +25,7 @@ import Component from 'vue-class-component';
     }
   }
 })
-export default class TextFieldQuery extends Vue {
+export default class Comparator extends Vue {
   logicalOperators = Object.values(LogicalOperator);
 }
 </script>

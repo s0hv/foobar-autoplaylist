@@ -36,7 +36,8 @@
 <script lang="ts">
 import { fields } from '@/autoplaylist/default/utils';
 import {
-  ITextComparison, LogicalOperator, NumberOperator,
+  ITextComparison,
+  NumberOperator,
   TextOperator
 } from '@/types/autoplaylist';
 import { oneSideOperatorValues } from '@/autoplaylist/default';

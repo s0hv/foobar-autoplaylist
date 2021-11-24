@@ -28,7 +28,7 @@
 }
 
 .query-row {
-    margin: 20px 0;
+    margin: 20px 0 20px 20px;
     border-width: 1px;
     border-color: rgba(0, 0, 0, 0.12);
     border-style: solid;

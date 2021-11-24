@@ -1,7 +1,7 @@
 <template>
   <div class="input-group">
     <v-container v-if="query.queries.length !== 0" class="root-container">
-      <draggable v-model="query.queries" handle=".handle" @end="sortQueries">
+      <draggable v-model="query.queries" handle=".handle" @end="sortQueries" :group="{ name: 'queries' }">
         <v-row v-for="q in query.queries" v-bind:key="q.id" class="flex-nowrap">
           <component v-bind:is="getQueryComponent(q)" :query="q"></component>
           <v-icon class="handle">
@@ -15,7 +15,7 @@
                 aria-label="remove query"
                 v-bind="attrs"
                 v-on="on"
-                @click="() => removeQuery(q)"
+                @click="() => removeQuery(q, query)"
               >
                 <v-icon>
                   delete_forever
@@ -47,21 +47,23 @@ import {
   IQueryInput, QueryType
 } from '@/types/autoplaylist';
 import { CombinedQuery, TextComparison } from '@/autoplaylist/default';
-import Vue from 'vue';
 import Component from 'vue-class-component';
 import { TimeComparison } from '@/autoplaylist/default/TimeComparison';
 import { FreeSpace } from '@/autoplaylist/default/FreeSpace';
 import FreeSpaceQuery from '@/components/FreeSpaceQuery.vue';
+import { CombinedQueryFunctions } from '@/components/query-constants';
+import Vue from 'vue';
 
 // lazy loading
 const TextFieldQuery = () => import('@/components/TextFieldQuery.vue');
 const TimeQuery = () => import('@/components/TimeQuery.vue');
+const CombinedQueryInput = () => import('@/components/CombinedQueryInput.vue');
 
 const draggable = () => import('vuedraggable');
 
 const queryToInput: Record<QueryType, string> = {
   [QueryType.TextQuery]: 'text-field-query',
-  [QueryType.CombinedQuery]: '',
+  [QueryType.CombinedQuery]: 'combined-query-input',
   [QueryType.TimeQuery]: 'time-query',
   [QueryType.FreeSpace]: 'free-space-query'
 };
@@ -83,6 +85,10 @@ const queryInputs: SelectOption[] = [
   {
     text: 'Free editing space',
     value: QueryType.FreeSpace
+  },
+  {
+    text: 'Combine multiple queries',
+    value: QueryType.CombinedQuery
   }
 ];
 
@@ -91,12 +97,16 @@ const queryInputs: SelectOption[] = [
     draggable,
     TextFieldQuery,
     TimeQuery,
-    FreeSpaceQuery
+    FreeSpaceQuery,
+    CombinedQueryInput
   }
 })
 export default class QueryInputSelector extends Vue implements IQueryInput {
   query: ICombinedQuery = new CombinedQuery([], true, false);
   selectedQueryType = QueryType.TextQuery;
+
+  updateFirstAndLastQuery = CombinedQueryFunctions.updateFirstAndLastQuery;
+  removeQuery = CombinedQueryFunctions.removeQuery;
 
   get queryInputs(): SelectOption[] {
     return queryInputs;
@@ -111,8 +121,8 @@ export default class QueryInputSelector extends Vue implements IQueryInput {
     return this.query;
   }
 
-  get queriesInOrder(): IAutoplaylistQuery[] {
-    return this.query.queries;
+  setQuery(query: ICombinedQuery): void {
+    this.query = query;
   }
 
   addQuery(): void {
@@ -131,6 +141,10 @@ export default class QueryInputSelector extends Vue implements IQueryInput {
         query = new FreeSpace('');
         break;
 
+      case QueryType.CombinedQuery:
+        query = new CombinedQuery([], false, false);
+        break;
+
       default:
         throw Error('Unsupported query type');
     }
@@ -141,22 +155,8 @@ export default class QueryInputSelector extends Vue implements IQueryInput {
     this.updateFirstAndLastQuery(query.parent);
   }
 
-  removeQuery(query: IAutoplaylistQuery): void {
-    const idx = this.query.queries.indexOf(query);
-    this.query.queries.splice(idx, 1);
-    this.updateFirstAndLastQuery(query.parent || this.query);
-  }
-
   sortQueries(): void {
     this.updateFirstAndLastQuery(this.query);
-  }
-
-  updateFirstAndLastQuery(query: ICombinedQuery): void {
-    const length = query.queries.length;
-    if (length === 0) return;
-
-    query.queries.forEach(q => (q.isLast = false));
-    query.queries[length - 1].isLast = true;
   }
 }
 </script>

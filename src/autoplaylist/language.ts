@@ -1,6 +1,27 @@
 import { LogicalOperator, TextOperator, OneSideOperator, NumberOperator, TimeOperator } from '@/types/autoplaylist';
 import { dateRegexFull } from '@/autoplaylist/default/utils';
 
+const FUNCTION_MODE: Mode = {
+  className: 'title',
+  begin: /\$\w+/,
+  end: /\(/,
+  excludeEnd: true
+};
+
+const STRING_MODE: Mode = {
+  className: 'string',
+  begin: '"',
+  end: '"',
+  contains: [
+    FUNCTION_MODE
+  ]
+};
+const NUMBER_MODE = (hljs: HLJSApi | undefined) => ({
+  className: 'number',
+  begin: hljs?.NUMBER_RE,
+  relevance: 0
+});
+
 const autoplaylistQueryLanguage: LanguageFn = (hljs) => ({
   name: 'fb2k',
   case_insensitive: true,
@@ -13,12 +34,7 @@ const autoplaylistQueryLanguage: LanguageFn = (hljs) => ({
     'NOT'
   ],
   contains: [
-    {
-      className: 'title',
-      begin: /\$/,
-      end: /\(/,
-      excludeEnd: true
-    },
+    FUNCTION_MODE,
     {
       className: 'variable',
       begin: /%|"%/,
@@ -28,16 +44,8 @@ const autoplaylistQueryLanguage: LanguageFn = (hljs) => ({
       className: 'string',
       begin: `\\b${dateRegexFull}`
     },
-    {
-      className: 'number',
-      begin: hljs?.NUMBER_RE,
-      relevance: 0
-    },
-    {
-      className: 'string',
-      begin: '"',
-      end: '"'
-    }
+    NUMBER_MODE(hljs),
+    STRING_MODE
   ]
 });
 

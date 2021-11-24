@@ -5,6 +5,8 @@ import {
 } from '@/types/autoplaylist';
 import { BaseAutoplaylistQuery } from '@/autoplaylist/default/BaseQuery';
 
+const INDENT = '  ';
+
 export class CombinedQuery extends BaseAutoplaylistQuery implements ICombinedQuery {
   queries: IAutoplaylistQuery[];
   /** Determines if this is the root query */
@@ -27,12 +29,22 @@ export class CombinedQuery extends BaseAutoplaylistQuery implements ICombinedQue
     let queriesJoined = '';
     const length = this.queries.length;
 
+    let depth = 0;
+    let parent = this.parent;
+    while (parent !== undefined) {
+      parent = parent.parent;
+      depth++;
+    }
+
+    const indent = INDENT.repeat(depth);
+    const bracketIndent = INDENT.repeat(Math.max(depth - 1, 0));
+
     for (let idx = 0; idx < length; idx++) {
       const q = this.queries[idx];
       if (idx === length - 1) {
         queriesJoined += q.rawQuery();
       } else {
-        queriesJoined += `${q.rawQuery()}\n${q.combinedWith}\n`;
+        queriesJoined += `${q.rawQuery()}\n${indent}${q.combinedWith}\n${indent}`;
       }
     }
 
@@ -40,7 +52,7 @@ export class CombinedQuery extends BaseAutoplaylistQuery implements ICombinedQue
     if (this.isRoot) {
       s = queriesJoined;
     } else {
-      s = `(${queriesJoined})`;
+      s = `(\n${indent}${queriesJoined}\n${bracketIndent})`;
     }
 
     return this.negateQuery(s);

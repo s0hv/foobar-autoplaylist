@@ -389,13 +389,17 @@ export const map2query: map2queryFn = (queryTree: TreeNode, root: boolean | unde
   const query = new CombinedQuery([], root, queryTree.negated, parent);
 
   for (const q of queryTree.queries) {
+    // Is a statement
     if ('query' in q) {
       query.queries.push(statement2query(q, query));
       continue;
     }
 
+    // Is a TreeNode
     query.queries.push(map2query(q, false, query));
   }
+
+  query.queries[query.queries.length - 1].isLast = true;
 
   return query;
 };
