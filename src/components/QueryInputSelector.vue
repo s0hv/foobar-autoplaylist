@@ -36,7 +36,7 @@
         class="ma-5"
       >
       </v-select>
-      <v-btn color="primary" @click="addQuery">Add new query</v-btn>
+      <v-btn color="primary" @click="addQuery" id="add-query-btn">Add new query</v-btn>
     </div>
   </div>
 </template>
@@ -169,9 +169,5 @@ export default class QueryInputSelector extends Vue implements IQueryInput {
     justify-content: center;
     flex-flow: column;
     width: 100%;
-  }
-
-  .handle {
-    cursor: move;
   }
 </style>

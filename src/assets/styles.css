@@ -49,3 +49,11 @@
          overflow: visible;
     }
 }
+
+details summary {
+    cursor: pointer;
+}
+
+.handle {
+cursor: move;
+}

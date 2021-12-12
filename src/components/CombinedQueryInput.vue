@@ -90,4 +90,7 @@ export default class CombinedQueryInput extends Vue {
   .nested-draggable {
     padding-bottom: 100px;
   }
+  .nested-draggable:empty {
+    padding-bottom: 180px;
+  }
 </style>

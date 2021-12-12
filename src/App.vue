@@ -1,9 +1,12 @@
 <template>
   <v-app id="app">
     <v-main>
+      <header class="header">
+        <h2>Foobar autoplaylist query editor</h2>
+      </header>
       <v-container class="root-container">
         <v-row justify="center">
-          <img alt="Vue logo" src="./assets/logo.png">
+          <HowToUse />
         </v-row>
         <v-row justify="center">
           <QueryInputSelector ref="text"></QueryInputSelector>
@@ -60,6 +63,7 @@
             :error-messages="errors"
             placeholder="Import query"
             outlined
+            id="import-query"
           >
           </v-textarea>
         </v-row>
@@ -74,11 +78,13 @@ import QueryInputSelector from '@/components/QueryInputSelector.vue';
 import Component from 'vue-class-component';
 import { Parser, map2query } from '@/autoplaylist/default/parser';
 import { ICombinedQuery } from '@/types/autoplaylist';
+import HowToUse from '@/components/HowToUse.vue';
 
 const QueryHighlighted = () => import('@/components/QueryHighlighted.vue');
 
 @Component({
   components: {
+    HowToUse,
     QueryInputSelector,
     QueryHighlighted
   }
@@ -130,6 +136,11 @@ export default class App extends Vue {
 #app {
   display: flex;
   flex-flow: row;
+}
+
+.header {
+  padding: 2em 0;
+  text-align: center;
 }
 
 html { overflow-y: auto }
