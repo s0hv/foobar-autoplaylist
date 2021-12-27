@@ -202,7 +202,7 @@ describe('Query parser invalid cases', () => {
       .toThrowWithMessage(SyntaxError, /Could not parse statement at position \d+\.\s+Expected one of/);
   });
 
-   it('Should throw when query does not contain built in operator', () => {
+  it('Should throw when query does not contain built in operator', () => {
     expect(() => new Parser('"test" HASS "abc" AND abc MISSING').parse())
       .toThrowWithMessage(SyntaxError, /Could not parse statement at position \d+\. Expected a built in operator but got a normal word\./);
   });

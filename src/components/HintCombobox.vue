@@ -22,8 +22,7 @@
 
 <script lang="ts">
 import {
-  ITextComparison,
-  ValueDescription
+  ITextComparison
 } from '@/types/autoplaylist';
 import Vue from 'vue';
 import Component from 'vue-class-component';
@@ -31,13 +30,12 @@ import {
   findFieldDescription
 } from '@/autoplaylist/default/utils';
 
-type FieldArray = Array<string | ValueDescription>;
 type HintFn = (name: string) => string;
 
 @Component({
   props: {
     fields: {
-      type: Array as () => FieldArray
+      type: Array as () => string[]
     },
     getHint: {
       type: Function,
@@ -52,7 +50,7 @@ export default class HintCombobox extends Vue {
   inputValue = '';
 
   $props!: {
-    fields: FieldArray,
+    fields: string[],
     getHint: HintFn,
     query: ITextComparison
   };
