@@ -6,13 +6,11 @@
         label="NOT"
       />
       <div class="spacing-18"></div>
-      <v-combobox
-        v-model="query.field"
-        :items="fields"
-        class="search resizable field"
-        label="Field"
+      <HintCombobox
+        :query="query"
+        :fields="fields"
       >
-      </v-combobox>
+      </HintCombobox>
       <v-combobox
         :items="operators"
         v-model="query.comparator"
@@ -34,7 +32,11 @@
 </template>
 
 <script lang="ts">
-import { fields } from '@/autoplaylist/default/utils';
+import {
+  arithmeticFunctions, boolFunctions,
+  fields,
+  stringFunctions
+} from '@/autoplaylist/default/utils';
 import {
   ITextComparison,
   NumberOperator,
@@ -44,9 +46,11 @@ import { oneSideOperatorValues } from '@/autoplaylist/default';
 import Vue from 'vue';
 import Component from 'vue-class-component';
 import Comparator from '@/components/Comparator.vue';
+import HintCombobox from '@/components/HintCombobox.vue';
 
 @Component({
   components: {
+    HintCombobox,
     Comparator
   },
   props: {
@@ -56,7 +60,13 @@ import Comparator from '@/components/Comparator.vue';
   }
 })
 export default class TextFieldQuery extends Vue {
-  fields = fields;
+  fields: string[] = [
+    ...fields,
+    ...boolFunctions,
+    ...stringFunctions,
+    ...arithmeticFunctions
+  ];
+
   operators = [...Object.values(TextOperator), ...oneSideOperatorValues, ...Object.values(NumberOperator)];
 
   $props!: {

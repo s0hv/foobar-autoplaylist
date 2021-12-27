@@ -6,13 +6,11 @@
         label="NOT"
       />
       <div class="spacing-18"></div>
-      <v-combobox
-        v-model="query.field"
-        :items="timeFields"
-        class="search resizable  field"
-        label="Field"
+      <HintCombobox
+        :fields="timeFields"
+        :query="query"
       >
-      </v-combobox>
+      </HintCombobox>
       <v-combobox
         :items="operators"
         v-model="query.comparator"
@@ -35,11 +33,13 @@ import Component from 'vue-class-component';
 import Vue from 'vue';
 import { ITextComparison, TimeOperator } from '@/types/autoplaylist';
 import TimeInput from '@/components/TimeInput.vue';
-import { timeFields } from '@/autoplaylist/default/utils';
+import { timeFields, timeFunctions } from '@/autoplaylist/default/utils';
 import Comparator from '@/components/Comparator.vue';
+import HintCombobox from '@/components/HintCombobox.vue';
 
 @Component({
   components: {
+    HintCombobox,
     Comparator,
     TimeInput
   },
@@ -51,7 +51,10 @@ import Comparator from '@/components/Comparator.vue';
 })
 export default class TimeQuery extends Vue {
   operators: string[] = Object.values(TimeOperator);
-  timeFields = timeFields;
+  timeFields = [
+    ...timeFields,
+    ...timeFunctions
+  ];
 
   $props!: {
     query: ITextComparison

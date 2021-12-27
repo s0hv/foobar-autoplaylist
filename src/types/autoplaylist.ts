@@ -80,12 +80,6 @@ export interface ITextComparison extends IAutoplaylistQuery {
   comparedAgainst: string | null
 }
 
-export interface ITimeQuery extends IAutoplaylistQuery {
-  time1: Date
-  operator: TimeOperator | string
-  time2: Date
-}
-
 // Parser related
 interface StatementAndNode {
   combinedWith: string | null
@@ -97,7 +91,7 @@ export interface Statement extends StatementAndNode {
   original: string
 }
 
-export interface TreeNode extends StatementAndNode{
+export interface TreeNode extends StatementAndNode {
   queries: Array<Statement|TreeNode>
   children: TreeNode[]
   prevNode?: TreeNode
