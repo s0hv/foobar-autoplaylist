@@ -93,7 +93,7 @@
         </v-row>
         <v-row justify="center" class="pb-2">
           <v-btn @click="toggleView" dark>
-            Switch to query editor
+            Switch to query only editor
             <v-icon>swap_horiz</v-icon>
           </v-btn>
           <v-tooltip bottom>
