@@ -1,4 +1,5 @@
 # foobar-autoplaylist
+A foobar2000 syntax highlighter and editor for query and title formatting code.
 
 ## Project setup
 ```
@@ -24,6 +25,3 @@ npm run test:unit
 ```
 npm run lint
 ```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
