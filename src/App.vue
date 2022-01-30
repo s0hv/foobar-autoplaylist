@@ -2,7 +2,7 @@
   <v-app id="app">
     <v-main v-if="openView !== '1'">
       <header class="header">
-        <h2>Foobar autoplaylist query editor</h2>
+        <h2>Foobar query editor</h2>
       </header>
       <v-container class="root-container">
         <v-row justify="center">
@@ -77,7 +77,7 @@
     </v-main>
     <v-main v-else>
       <header class="header">
-        <h2>Foobar autoplaylist query/title formatting editor</h2>
+        <h2>Foobar query/title formatting editor</h2>
       </header>
       <v-container>
         <v-row justify="center" class="pb-2">
