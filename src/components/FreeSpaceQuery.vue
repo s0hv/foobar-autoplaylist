@@ -1,18 +1,8 @@
 <template>
   <v-container class="query-row">
     <v-row>
-      <v-textarea
-        label="Free text edit space"
-        v-model="query.queryText"
-        rows="1"
-        :no-resize="false"
-        hide-details
-        auto-grow
-        row-height="46"
-        class="resizable"
-      />
+      <codemirror v-model="query.queryText" :value="query.queryText" />
     </v-row>
-    <comparator :query="query" />
   </v-container>
 </template>
 
@@ -21,9 +11,10 @@ import Component from 'vue-class-component';
 import { IFreeSpace } from '@/types/autoplaylist';
 import Vue from 'vue';
 import Comparator from '@/components/Comparator.vue';
+import Codemirror from '@/components/Codemirror.vue';
 
 @Component({
-  components: { Comparator },
+  components: { Codemirror, Comparator },
   props: {
     query: {
       type: Object as () => IFreeSpace

@@ -4,6 +4,9 @@ module.exports = {
   transpileDependencies: [
     'vuetify'
   ],
+  configureWebpack: {
+    devtool: 'source-map'
+  },
   pluginOptions: {
     webpackBundleAnalyzer: {
       analyzerMode: process.env.NODE_ENV === 'production' ? 'disabled' : 'static',

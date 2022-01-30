@@ -18,7 +18,7 @@ export enum TimeOperator {
   Before = 'BEFORE',
   After = 'AFTER',
   Since = 'SINCE',
-  During = 'DURING'
+  During = 'DURING',
 }
 
 export enum NumberOperator {
@@ -58,7 +58,8 @@ export interface IAutoplaylistQuery{
 }
 
 export interface IQueryInput {
-  getQuery(): IAutoplaylistQuery | null;
+  getQuery(): ICombinedQuery | null;
+  setQuery(query: ICombinedQuery): void;
 }
 
 // Forward declared

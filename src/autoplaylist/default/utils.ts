@@ -1,4 +1,10 @@
-// A fine piece of regex
+import {
+  Completion,
+  CompletionContext,
+  CompletionResult
+} from '@codemirror/autocomplete';
+import { hoverTooltip } from '@codemirror/tooltip';
+
 import {
   NumberOperator,
   OneSideOperator,
@@ -6,6 +12,7 @@ import {
   TimeOperator
 } from '@/types/autoplaylist';
 
+// A fine piece of regex
 export const dateRegexFull = '\\d{4}(-\\d{2}(-\\d{2}( \\d{2}(:\\d{2}(:\\d{2})?)?)?)?)?';
 export const dateRegex = new RegExp(`^${dateRegexFull}$`);
 
@@ -68,6 +75,7 @@ export const fields = [
   '%path%',
   '%_path_raw%',
   '%subsong%',
+  '%genre%',
 
   // https://wiki.hydrogenaud.io/index.php?title=Foobar2000:Components/Playback_Statistics_v3.x_(foo_playcount)
   '%play_count%',
@@ -153,6 +161,26 @@ export const timeFunctions: string[] = [
   '$time(time)'
 ];
 
+// https://wiki.hydrogenaud.io/index.php?title=Foobar2000:Title_Formatting_Reference#Control_flow_functions
+export const controlFlowFunctions: string[] = [
+  '$if(cond,then,else)',
+  '$if2(expr,else)',
+  '$if3(a1,a2,...,aN,else)',
+  '$ifequal(int1,int2,then,else)',
+  '$ifgreater(int1,int2,then,else)',
+  '$iflonger(str,n,then,else)',
+  '$select(n,a1,...,aN)'
+];
+
+export const allFunctions = [
+  ...arithmeticFunctions,
+  ...boolFunctions,
+  ...infoFunctions,
+  ...stringFunctions,
+  ...timeFunctions,
+  ...controlFlowFunctions
+];
+
 // Descriptions taken from https://wiki.hydrogenaud.io/index.php?title=Foobar2000:Title_Formatting_Reference
 export const functionDescriptions: {[name: string]: string} = {
   $add: 'Addition of numbers. a + b + ...',
@@ -219,7 +247,16 @@ export const functionDescriptions: {[name: string]: string} = {
   $month: 'Retrieves the month part (formatted as two digits) from a time/date string.',
   $day_of_month: 'Retrieves the day of month part (formatted as two digits) from a time/date string.',
   $date: 'Retrieves the date part (formatted as YYYY-MM-DD) from a time/date string.',
-  $time: 'Retrieves the time part (formatted as HH:MM:SS or HH:MM) from a date/time string.'
+  $time: 'Retrieves the time part (formatted as HH:MM:SS or HH:MM) from a date/time string.',
+
+  // https://wiki.hydrogenaud.io/index.php?title=Foobar2000:Title_Formatting_Reference#Control_flow_functions
+  $if: 'If cond evaluates to true, the then part is evaluated and its value returned. Otherwise, the else part is evaluated and its value returned.',
+  $if2: 'If expression expr is true, expr is returned, otherwise the else part is evaluated and expr is returned as true.',
+  $if3: 'Evaluates arguments a1 ... aN, until one is found that evaluates to true and its value is returned. Otherwise the else part is evaluated and its value returned.',
+  $ifequal: 'Compares the integer numbers int1 and int2. If int1 is equal to int2, the then part is evaluated and its value returned. Otherwise the else part is evaluated and its value returned.',
+  $ifgreater: 'Compares the integer numbers int1 and int2. If int1 is greater than int2, the then part is evaluated and its value returned. Otherwise the else part is evaluated and its value returned.',
+  $iflonger: 'Compares the length of the string str to the number n. If str is longer than n characters, the then part is evaluated and its value returned. Otherwise the else part is evaluated and its value returned.',
+  $select: 'If the value of n is between 1 and N, an is evaluated and its value returned. Otherwise false is returned.'
 };
 
 // https://wiki.hydrogenaud.io/index.php?title=Foobar2000:Title_Formatting_Reference#Remapped_metadata_fields
@@ -258,6 +295,7 @@ export const fieldDescriptions: {[field: string]: string} = {
   '%last_modified%': 'The date and time the file was last modified. Eg: 2005-12-22 00:04:10',
   '%path%': 'The complete path, including the filename and extension.',
   '%subsong%': 'The subsong index.',
+  '%genre%': 'Genre as a comma separated list',
 
   // https://wiki.hydrogenaud.io/index.php?title=Foobar2000:Components/Playback_Statistics_v3.x_(foo_playcount)
   '%first_played%': 'Date/time at which the song was played for the first time.',
@@ -277,7 +315,20 @@ export const valueOperators: Set<string> = new Set([
   ...Object.values(TextOperator),
   ...Object.values(OneSideOperator),
   ...Object.values(NumberOperator),
-  ...Object.values(TimeOperator)
+  ...Object.values(TimeOperator),
+  'DURING LAST',
+  'SORT BY',
+  'SORT DESCENDING BY',
+  'SECOND',
+  'MINUTE',
+  'HOUR',
+  'DAY',
+  'WEEK',
+  'SECONDS',
+  'MINUTES',
+  'HOURS',
+  'DAYS',
+  'WEEKS'
 ]);
 
 const functionNameRegex = /^\s*(\$\w+).*?$/;
@@ -287,3 +338,154 @@ export function findFieldDescription(field: string): string {
 
   return functionDescriptions[match[1]] || '';
 }
+
+function findFunctionDescription(fn: string): string | undefined {
+  const match = fn.match(functionNameRegex);
+  if (match === null) return;
+
+  return functionDescriptions[match[1]];
+}
+
+type AutocompleteList = {
+  list: Completion[],
+  oldMatch?: string
+};
+
+type ApplyCompletion = (s: string) => string | undefined;
+type GetEndFn = ({ begin, prefix, textNoPrefix }: { begin: string, prefix: string, textNoPrefix: string}) => string;
+
+export const defaultGetEnd: GetEndFn = ({ begin, prefix }) => (begin + prefix).split('').reverse().join('');
+export const createAutocompleteFunction = (
+  matcher: RegExp,
+  values: string[] | (() => string[]),
+  type: string,
+  documentation?: (s: string) => string | undefined,
+  apply: ApplyCompletion = (_: string): string | undefined => undefined,
+  getEnd: GetEndFn = defaultGetEnd
+) => {
+  function autocompleteFn(this: AutocompleteList, ctx: CompletionContext): CompletionResult | null {
+    const actualValues = Array.isArray(values) ? values : values();
+    if (actualValues.length === 0) return null;
+
+    const textMatch = ctx.matchBefore(matcher);
+    if (textMatch === null) return null;
+
+    const match = textMatch.text.match(matcher);
+    if (match === null) return null;
+    const { begin = '', prefix = '', text: textNoPrefix } = match.groups as { begin?: string, prefix?: string, text: string };
+    const text = prefix + textNoPrefix;
+
+    if (!this.oldMatch || !text.startsWith(this.oldMatch)) {
+      this.list = [];
+    }
+
+    let newList: Completion[] = [];
+
+    if (this.list.length > 0 && Array.isArray(values)) {
+      for (const completion of this.list) {
+        if (completion.label.includes(textNoPrefix)) {
+          newList.push(completion);
+        }
+      }
+    } else {
+      for (const val of actualValues) {
+        if (val.includes(textNoPrefix)) {
+          newList.push({
+            label: val,
+            type,
+            apply: apply(val),
+            info: documentation ? documentation(val) : undefined
+          });
+        }
+      }
+    }
+
+    newList = newList.sort((a, b) => {
+      if (a.label.startsWith(text)) return -1;
+      if (b.label.startsWith(text)) return 1;
+
+      return a.label > b.label ? -1 : 1;
+    });
+
+    if (newList.length === 0) return null;
+
+    // If user has already set characters like quotes at the end of the string we
+    // want to replace those.
+    const replaceEnd = getEnd({ begin, prefix, textNoPrefix });
+    const endCharacters = ctx.state.sliceDoc(ctx.pos, ctx.pos + replaceEnd.length);
+
+    const from = textMatch.from + textMatch.text.length - (text.length + begin.length);
+    let to = textMatch.to;
+
+    if (replaceEnd === endCharacters) {
+      to += replaceEnd.length;
+    }
+
+    this.list = newList;
+
+    return {
+      from,
+      to,
+      options: newList,
+      filter: false
+    };
+  }
+
+  autocompleteFn.list = [] as Completion[];
+  autocompleteFn.oldMatch = undefined as string | undefined;
+
+  return autocompleteFn;
+};
+
+export const functionRegex = /(?<begin>(")?)(?<prefix>\$)(?<text>(\w|[0-9_ (])+)/i;
+export const fnGetEnd: GetEndFn = ({ begin }) => begin;
+export const functionApplyCompletion: ApplyCompletion = (s: string) => `"${s}"`;
+export const functionAutocomplete = (apply: ApplyCompletion = functionApplyCompletion, getEnd: GetEndFn = fnGetEnd) => createAutocompleteFunction(
+  functionRegex,
+  allFunctions,
+  'function',
+  findFunctionDescription,
+  apply,
+  getEnd
+);
+
+export const fieldRegex = /((?<begin>(")?)(?<prefix>%)(?<text>(\w|[0-9_ ])+))/i;
+export const applyField = (s: string): string | undefined => / /.test(s) ? `"${s}"` : undefined;
+export const fieldAutocomplete = (apply: ApplyCompletion = applyField, getEnd = defaultGetEnd) => createAutocompleteFunction(
+  fieldRegex,
+  fields,
+  'variable',
+  (field) => fieldDescriptions[field],
+  apply,
+  getEnd
+);
+
+const operatorRegex = /(?:^| )(?<text>[A-Z]+)/;
+export const operatorAutocomplete = createAutocompleteFunction(
+  operatorRegex,
+  Array.from(valueOperators),
+  'keyword',
+  undefined,
+  () => undefined
+);
+
+export const functionTooltip = hoverTooltip((view, pos) => {
+  const { from, to, text } = view.state.doc.lineAt(pos);
+
+  const match = text.match(functionRegex);
+  if (!match) return null;
+
+  const tooltip = functionDescriptions[match[1]];
+  if (!tooltip) return null;
+
+  return {
+    pos: from,
+    end: to,
+    above: false,
+    create() {
+      const dom = document.createElement('div');
+      dom.textContent = tooltip;
+      return { dom };
+    }
+  };
+});

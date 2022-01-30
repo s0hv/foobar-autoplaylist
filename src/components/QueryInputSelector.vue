@@ -99,17 +99,33 @@ const queryInputs: SelectOption[] = [
     TimeQuery,
     FreeSpaceQuery,
     CombinedQueryInput
+  },
+  props: {
+    initialQuery: {
+      type: Object as () => ICombinedQuery,
+      required: false
+    }
   }
 })
 export default class QueryInputSelector extends Vue implements IQueryInput {
   query: ICombinedQuery = new CombinedQuery([], true, false);
   selectedQueryType = QueryType.TextQuery;
 
+  $props!: {
+    initialQuery?: ICombinedQuery | null
+  };
+
   updateFirstAndLastQuery = CombinedQueryFunctions.updateFirstAndLastQuery;
   removeQuery = CombinedQueryFunctions.removeQuery;
 
   get queryInputs(): SelectOption[] {
     return queryInputs;
+  }
+
+  created(): void {
+    if (this.$props.initialQuery) {
+      this.query = this.$props.initialQuery;
+    }
   }
 
   getQueryComponent(query: IAutoplaylistQuery): string {
