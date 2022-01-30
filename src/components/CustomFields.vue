@@ -2,12 +2,12 @@
    <v-container class="container">
      <v-text-field
        v-model="newField"
-       label="Add %custom field%"
+       label="Add %custom field% or $function"
        append-outer-icon="add_circle_outline"
        @click:append-outer="addNewField"
        @keydown="checkEnter"
      />
-     <h4 v-if="customFields.length !== 0">Custom metadata fields</h4>
+     <h4 v-if="customFields.length !== 0">Custom metadata fields and functions</h4>
      <ul>
        <li v-for="field in customFields" v-bind:key="field">
          {{ field }}
@@ -40,7 +40,6 @@
 <script lang="ts">
 import Component from 'vue-class-component';
 import Vue from 'vue';
-import { ITextComparison } from '@/types/autoplaylist';
 
 const customFieldsKey = 'customFields';
 const customFunctionsKey = 'customFunctions';
